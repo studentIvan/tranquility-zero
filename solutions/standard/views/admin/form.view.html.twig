@@ -1,0 +1,60 @@
+{% if flash_error %}
+    {% include 'admin/alert.danger.html.twig' %}
+{% endif %}
+{% if flash_warning %}
+    {% include 'admin/alert.warning.html.twig' %}
+{% endif %}
+{% if flash_success %}
+    {% include 'admin/alert.success.html.twig' %}
+{% endif %}
+{% if flash_console %}
+    <script type="text/javascript">
+    {% for flash in flash_console %}
+        console.info({{ flash|json_encode|raw }});
+    {% endfor %}
+    </script>
+{% endif %}
+<ul class="list-group">
+    {% for field_name, field_data in fields %}
+        {% if read_data[field_name] %}
+            <li class="list-group-item">
+                <h4 class="list-group-item-heading">
+                    {% if field_data.description %}
+                        {{ field_data.description }}
+                    {% else %}
+                        {{ field_name|capitalize }}
+                    {% endif %}
+                </h4>
+
+                <p class="list-group-item-text{% if field_data.type == 'datetime' %} field-datetime{% endif %}">
+                    {% if field_data.type == 'password' %}
+                        <span style="color: gray">**************</span>
+                    {% else %}
+                        {% if field_data.values %}
+                            {{ field_data.values[read_data[field_name]] }}
+                        {% else %}
+                            {{ read_data[field_name]|raw }}
+                        {% endif %}
+                    {% endif %}
+                </p>
+            </li>
+        {% endif %}
+    {% endfor %}
+    {% if container.type == 'form' %}
+        <li class="list-group-item">
+            <a class="btn btn-default"
+               href="{{ panel_base_uri }}/{{ admin_part }}/edit?e={{ read_data[container.diff_field] }}">
+                <span class="icon-edit"></span>&nbsp;Изменить
+            </a>
+            <button id="btn-delete" type="button" class="btn btn-danger"
+                    data-unique="{{ read_data[container.diff_field] }}">
+                <span class="icon-remove"></span>&nbsp;Удалить
+            </button>
+        </li>
+    {% endif %}
+</ul>
+<script type="text/javascript">
+    $(".field-datetime").each(function () {
+        $(this).html(ldt.localize($(this).html())).removeClass("field-datetime")
+    });
+</script>

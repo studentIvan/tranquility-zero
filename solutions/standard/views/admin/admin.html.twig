@@ -1,0 +1,146 @@
+{% extends 'admin/skeleton.admin.html.twig' %}
+{% block fixedb %}
+    {% if container.count or container.count == 0 %}
+        {% include 'admin/admin.navbar.bottom.html.twig' %}
+    {% endif %}
+{% endblock %}
+{% block container %}
+    <span id="top-of-container">
+        {% if flash_error %}
+            {% include 'admin/alert.danger.html.twig' %}
+        {% endif %}
+        {% if flash_warning %}
+            {% include 'admin/alert.warning.html.twig' %}
+        {% endif %}
+        {% if flash_success %}
+            {% include 'admin/alert.success.html.twig' %}
+        {% endif %}
+        {% if flash_console %}
+            <script type="text/javascript">
+                {% for flash in flash_console %}
+                console.info({{ flash|json_encode|raw }});
+                {% endfor %}
+            </script>
+        {% endif %}
+    </span>
+    {% if container.type == 'text' %}
+        {{ container.text|raw }}
+    {% elseif container.type == 'page' %}
+        {% include 'admin/'~container.page~'.html.twig' %}
+    {% elseif container.type == 'listing' %}
+        {% if container.data|length == 0 %}
+            <div class="alert alert-info">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                Нет элементов для отображения.
+            </div>
+        {% endif %}
+        {% include 'admin/admin.filter.html.twig' %}
+        <table class="table table-hover table-expand">
+            {% for e in container.data %}
+                <tr id="elements-row-{{ e[container.diff_field] }}" data-unique="{{ e[container.diff_field] }}"
+                        {% if mobile and not container.only_display %}
+                    onclick="window.location.href='{{ panel_base_uri }}/{{ admin_part }}/view?e={{ e[container.diff_field] }}'"
+                        {% endif %}>
+                    {% for h in container.fields_displayable %}
+                        <td>
+                            {% set data_element = container.fields[h].values[e[h]]
+                                ? container.fields[h].values[e[h]] : e[h] %}
+                            <div style="position: relative;">
+                            <span class="field-{{ container.fields[h].type }}">
+                                {{ data_element|raw }}
+                            </span>
+                            </div>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+        {% if pagination %}
+            <ul class="pagination">
+                {% if pagination.current_id != 1 %}
+                    <li><a href="{{ panel_base_uri }}/{{ admin_part }}{{ query_string }}">1</a></li>{% endif %}
+                {% if pagination.prev_id and pagination.prev_id != 1 %}
+                    <li>
+                    <a href="{{ panel_base_uri }}/{{ admin_part }}/page_{{ pagination.prev_id }}{{ query_string }}">{{ pagination.prev_id }}</a>
+                    </li>{% endif %}
+                <li class="active"><a href="#">{{ pagination.current_id }}</a></li>
+                {% if pagination.next_id %}
+                    <li>
+                        <a href="{{ panel_base_uri }}/{{ admin_part }}/page_{{ pagination.next_id }}{{ query_string }}">{{ pagination.next_id }}</a>
+                    </li>
+                    {% if pagination.total_pages > pagination.next_id %}
+                        <li>
+                            <a href="{{ panel_base_uri }}/{{ admin_part }}/page_{{ pagination.total_pages }}{{ query_string }}">{{ pagination.total_pages }}</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+        {% endif %}
+    {% else %}
+    {% endif %}
+{% endblock %}
+{% block modal %}
+    {% if container.create_new_message %}<!-- Modal -->
+        <div class="modal fade" id="modalCreate">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">{{ container.create_new_message }}</h4>
+                    </div>
+                    <div class="modal-body">
+                        {% include "admin/form.create.html.twig" with container %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-primary"
+                                onclick="$(this).addClass('disabled'); $('#create-form').submit()">Сохранить
+                        </button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <!-- Modal -->
+        <div class="modal fade" id="modalEdit">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Редактирование</h4>
+                    </div>
+                    <div class="modal-body" id="modalEditBody">
+                        <span class="icon-spinner icon-spin"></span> Кручусь-верчусь - контент гружусь...
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary"
+                                onclick="$(this).addClass('disabled'); $('#edit-form').submit()"><span
+                                    class="icon-check"></span>&nbsp;Сохранить изменения
+                        </button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div><!-- /.modal -->{% endif %}
+
+    <!-- Modal -->
+    <div class="modal fade" id="modalView">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Просмотр элемента</h4>
+                </div>
+                <div class="modal-body" id="modalViewBody">
+                    <span class="icon-spinner icon-spin"></span> Кручусь-верчусь - контент гружусь...
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+{% endblock %}

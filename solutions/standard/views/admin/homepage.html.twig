@@ -1,0 +1,108 @@
+<div>
+    <div class="stats-div" data-content="{% include 'admin/stats.visitors.popover.html.twig' with visit_stats %}">
+        <table class="table-stats">
+            <tr>
+                <td>
+                    {% if visit_stats.today.diff_percent > 0 %}
+                        <div><img src="/img/admin/good.png"></div>
+                        <div class="pretty-good">
+                            +{{ visit_stats.today.diff_percent }}%
+                        </div>
+                    {% elseif visit_stats.today.diff_percent == 0 %}
+                        <div><img src="/img/admin/neutral.png"></div>
+                        <div class="pretty-neutral">
+                            +0%
+                        </div>
+                    {% elseif visit_stats.today.diff_percent < 0 %}
+                        <div><img src="/img/admin/bad.png"></div>
+                        <div class="pretty-bad">
+                            {{ visit_stats.today.diff_percent }}%
+                        </div>
+                    {% endif %}
+                </td>
+                <td>
+                    <div><strong>{{ visit_stats.today.visitors }}</strong></div>
+                    <div>Посетители</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="stats-div" data-content="{% include 'admin/stats.users.popover.html.twig' with users_stats %}">
+        <table class="table-stats">
+            <tr>
+                <td>
+                    {% if users_stats.growth > 0 %}
+                        <div><img src="/img/admin/good.png"></div>
+                        <div class="pretty-good">
+                            +{{ users_stats.growth }}%
+                        </div>
+                    {% elseif users_stats.growth == 0 %}
+                        <div><img src="/img/admin/neutral.png"></div>
+                        <div class="pretty-neutral">
+                            +0%
+                        </div>
+                    {% elseif users_stats.growth < 0 %}
+                        <div><img src="/img/admin/bad.png"></div>
+                        <div class="pretty-bad">
+                            {{ users_stats.growth }}%
+                        </div>
+                    {% endif %}
+                </td>
+                <td>
+                    <div><strong>{{ users_stats.total }}</strong></div>
+                    <div>Пользователи</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="stats-div" data-content="Разница времени до первого аптайма">
+        <table class="table-stats">
+              <tr>
+                  <td>
+                      <div><img src="/img/admin/graph.png"></div>
+                      <div class="pretty-good">
+                          {{ online_stats.how_long }}
+                      </div>
+                  </td>
+                  <td>
+                    <div><strong>{{ online_stats.total }}</strong></div>
+                    <div>Онлайн</div>
+                  </td>
+              </tr>
+          </table>
+    </div>
+</div>
+<br>
+{% if not mobile %}<div class="panel panel-default">
+    <div class="panel-heading">Размер сайта</div>
+    <div class="panel-body" id="space-info">
+        <small>Подсчёт размера сайта, подождите...</small>
+        <div class="progress progress-striped active">
+            <div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%;"></div>
+        </div>
+    </div>
+</div>{% endif %}
+<div class="panel panel-default">
+    <ul class="list-group">
+        <li class="list-group-item"><span class="icon-cog"></span>&nbsp;Режим разработчика: {% if debug %}<a
+                    class="tooltipped" style="cursor: help; color: darkred; border-bottom: 1px dotted darkred"
+                    data-toggle="tooltip"
+                    title="В режиме разработчика система оптимизируется для разработки: отключается кеширование, на экране отображается подробная информация об ошибках. Рекомендуется отключить эту опцию в конфигурации для нормальной и безопасной работы вашего сайта.">включен</a>{% else %}выключен{% endif %}
+        </li>
+        <li class="list-group-item"><span class="icon-cog"></span>&nbsp;Время жизни
+            сессии: {{ (session_lifetime_hours ~ " час")|plural("", "а", "ов") }}</li>
+        <li class="list-group-item"><span class="icon-cog"></span>&nbsp;Чистка мусора: {% if session_garbage_auto_dump %}<a
+                    class="tooltipped" style="cursor: help; color: darkred; border-bottom: 1px dotted darkred"
+                    data-toggle="tooltip"
+                    title="Автоматическая чистка мусора создаёт дополнительную нагрузку на сайт, рекомендуется только для разработки и отладки">автоматически</a>{% else %}вручную или CRON{% endif %}
+        </li>
+    </ul>
+</div>
+<!--<p>
+<a href="/" target="_blank" class="btn btn-primary">
+<i class="icon-share icon-white"></i>
+открыть {{ site_title }} в новой вкладке
+</a>
+</p>-->

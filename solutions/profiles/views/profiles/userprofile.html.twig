@@ -1,0 +1,65 @@
+{% extends 'skeleton.html.twig' %}
+{% block body %}
+    <div class="page-header">
+        <h1>{% if vk.user_link %}<span class="icon-vk"></span> {{ user.full_name }}
+            {% elseif fb.user_link %}<span class="icon-facebook-sign"></span> {{ user.full_name }}
+            {% else %}@{{ user.nickname ? user.nickname : user.login }}
+            {% if user.full_name %}
+                <small>{{ user.full_name }}</small>
+            {% endif %}{% endif %}
+        </h1>
+    </div>
+    <div class="row">
+        <div class="col-lg-2">
+            <br>
+            <img src="{% if user.photo %}{{ user.photo }}{% else %}/img/anonymous.png{% endif %}">
+        </div>
+        <div class="col-lg-8">
+            <ul class="list-group">
+                {% if vk.user_link %}
+                    <li class="list-group-item">
+                        <strong>VK.com</strong>: <a href="http://vk.com/{{ vk.user_link }}"
+                                                    target="_blank">@{{ vk.user_link }}</a>
+                    </li>
+                {% elseif fb.user_link %}
+                    <li class="list-group-item">
+                        <strong>Facebook</strong>: <a href="http://facebook.com/{{ fb.user_link }}"
+                                                    target="_blank">@{{ fb.user_link }}</a>
+                    </li>
+                {% endif %}
+                {% if user.nickname %}
+                    <li class="list-group-item">
+                        <strong>Ник</strong>: {{ user.nickname }}
+                    </li>
+                {% endif %}
+                {% if user.full_name %}
+                    <li class="list-group-item">
+                        <strong>Полное имя</strong>: {{ user.full_name }}
+                    </li>
+                {% endif %}
+                {% if user.birthday %}
+                    <li class="list-group-item">
+                        <strong>Дата рождения</strong>: {{ user.birthday|date('d.m.Y') }}
+                        {% set years_old = (now|date('Y')|int) - (user.birthday|date('Y')|int) %}
+                        ({{ (years_old ~ " ")|plural("год", "года", "лет") }})
+                    </li>
+                {% endif %}
+                <li class="list-group-item">
+                    <strong>Дата {% if vk.user_link %}синхронизации с VK{% elseif fb.user_link %}синхронизации с Facebook{% else %}регистрации{% endif %}</strong>:
+                    <span class="dtl10n">{{ user.registered_at }}</span>
+                </li>
+                <li class="list-group-item">
+                    <strong>Роль</strong>: {{ user.role }}
+                </li>
+                <li class="list-group-item">
+                    <strong>Пол</strong>: {% if user.gender == 'm' %}парень{% else %}девушка{% endif %}
+                </li>
+                {% if user.about_me %}
+                    <li class="list-group-item">
+                        <strong>Обо мне</strong>: {{ user.about_me }}
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

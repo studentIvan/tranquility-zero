@@ -1,0 +1,200 @@
+<script type="text/javascript">
+    modifyPanel = {% if not container.only_display %}'{% include 'admin/admin.elements.menu.html.twig' %}';{% else %}'';{% endif %}
+    $(document).ready(function () {
+        ldt = new LocalizedDate(4);
+        $(".field-datetime").each(function () {
+            $(this).html(ldt.localize($(this).html())).removeClass("field-datetime")
+        });
+        {% if not mobile %}$(".table-expand tr").each(function() {
+            var unique = $(this).data('unique');
+            $(this).hover(function(){
+                $(this).find(".modify").fadeIn(0);
+            }, function() {
+                $(this).find(".modify").fadeOut(0);
+            });
+
+            var tmpElement = $(this).find("td:first div");
+            tmpElement.html(tmpElement.html() + modifyPanel);
+
+            var this_modify = $(this).find(".modify");
+			this_modify.find(".view-link").data('unique', unique).click(function(){
+                var unique = $(this).data('unique');
+				$('#modalView').data('unique', unique);
+            });
+            this_modify.find(".change-link").data('unique', unique).click(function(){
+                var unique = $(this).data('unique');
+				$('#modalEdit').data('unique', unique);
+            });
+            this_modify.find(".delete-link").data('unique', unique).click(function()
+			{
+				if (window.confirm('Вы уверены?')) 
+				{
+					var unique = $(this).data('unique');
+					
+					$('#top-of-container').html('<div class="alert alert-info">Происходит удаление...</div>');
+					
+					$.post("{{ panel_base_uri }}/ajax?csrf_token={{ csrf_token }}",
+                            { a: "delete", p: "{{ admin_part }}", e: unique })
+					.done(function(data) 
+					{
+						if (data !== 'ok') 
+						{
+							$('#top-of-container').html(data);
+						}
+						else 
+						{
+							$("#elements-row-" + unique).fadeOut();
+							
+							var result, 
+								nCounter1 = $("#display-info-total"), 
+								nCounter2 = $("#display-info-all"), 
+								nCounter3 = $('.base-active').find('.badge');
+						
+							result = (nCounter1.html())*1-1;
+							nCounter1.html(result);
+							result = (nCounter2.html())*1-1;
+							nCounter2.html(result);
+							result = (nCounter3.html())*1-1;
+							nCounter3.html(result);
+							
+							$('#top-of-container').html(
+                                    '<div class="alert alert-success">' +
+                                            '<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                                            'Элемент успешно удален.</div>'
+                            );
+						}
+					});
+				}
+            });
+
+            this_modify.fadeOut(0);
+        });
+		
+		$('#modalView').on('shown.bs.modal', function () {
+			var unique = $(this).data('unique');
+			$.post("{{ panel_base_uri }}/ajax?csrf_token={{ csrf_token }}", { a: "view", p: "{{ admin_part }}", e: unique })
+			.done(function(data) {
+				$("#modalViewBody").html(data);
+			});
+		}).on('hidden.bs.modal', function () {
+			$("#modalViewBody").html('<span class="icon-spinner icon-spin"></span> Кручусь-верчусь - контент гружусь...');
+		});
+		
+		$('#modalEdit').on('shown.bs.modal', function () {
+			var unique = $(this).data('unique');
+			$.post("{{ panel_base_uri }}/ajax?csrf_token={{ csrf_token }}{% if admin_part_action %}&rp={{ admin_part_action }}{% endif %}", { a: "edit-form", p: "{{ admin_part }}", e: unique })
+                    .done(function (data) {
+                        $("#modalEditBody").html(data);
+                        $('.tags-input-edit').each(function () {
+                            var tagsAutoData = $(this).data('auto');
+                            $(this).tagsInput({
+                                'autocomplete': eval(tagsAutoData),
+                                'height': 'auto',
+                                'width': 'auto',
+                                'interactive': true,
+                                'defaultText': '',
+                                'removeWithBackspace': true,
+                                'placeholderColor': 'gray'
+                            })
+                        });
+                        $('.tooltipped').tooltip();
+                    });
+		}).on('hidden.bs.modal', function () {
+			$("#modalEditBody").html('<span class="icon-spinner icon-spin"></span> Кручусь-верчусь - контент гружусь...');
+		});
+
+        //$('.editor-attach').wysihtml5();
+		
+		$('.tooltipped').tooltip();
+        //$(".collapse").collapse();
+
+        $('.stats-div').popover({placement: 'bottom', trigger: 'hover', html: true});
+		
+		$('.left-menu-element').click(function() {
+			$('#main-container').fadeOut();
+			$('.left-menu-element').removeClass('active');
+			$(this).addClass('active');
+		});
+		
+		$('#main-container').fadeOut(0).fadeIn();
+
+        {% if not admin_part %}{% include 'admin/homepage.twig.js' %}{% endif %}
+		
+		batmanHand.init(function (path, title) {
+			if (title == 'Главная')
+				title = 'Dashboard';
+			document.title = title;
+			$('#title-brand').html(title);
+			window.location.href = path;
+		});
+		
+		document.body.onbeforeunload = function() {
+			$('.left-menu-element').removeClass('active');
+			$('.base-active').addClass('active');
+		}
+		{% endif %}
+
+        $('.tags-input').each(function() {
+            var tagsAutoData = $(this).data('auto');
+            $(this).tagsInput({
+                'autocomplete': eval(tagsAutoData),
+                'height':'auto',
+                'width':'auto',
+                'interactive':true,
+                'defaultText':'',
+                'removeWithBackspace' : true,
+                'placeholderColor' : 'gray'
+            })
+        });
+
+		$('#btn-delete').click(function() {
+			if (window.confirm('Вы уверены?')) {
+				var unique = $(this).data('unique');
+				window.location.href = '{{ panel_base_uri }}/{{ admin_part }}/delete?e=' + unique + '&csrf_token={{ csrf_token }}';
+			}
+		});
+
+        $('#truncate-button').click(function () {
+            if (window.confirm('Вы уверены?')) {
+                var truncateBtn = $(this);
+                $('#truncate').html('чистка...');
+                truncateBtn.addClass('disabled');
+                $.post("{{ panel_base_uri }}/ajax?csrf_token={{ csrf_token }}",
+                        { a: "truncate", p: "{{ admin_part }}" })
+                        .done(function (data) {
+                            if (data !== 'ok') {
+                                $('#top-of-container').html(data);
+                            } else {
+                                var nCounter1 = $("#display-info-total"),
+                                    nCounter2 = $("#display-info-all"),
+                                    nCounter3 = $('.base-active').find('.badge');
+
+                                nCounter1.html('0');
+                                nCounter2.html('0');
+                                nCounter3.html('0');
+
+                                $('#main-container').html('<span id="top-of-container"></span>');
+                                $('#top-of-container').html(
+                                        '<div class="alert alert-success">' +
+                                                '<button type="button" class="close" ' +
+                                                'data-dismiss="alert">&times;</button>' +
+                                                'Чистка прошла успешно.</div>'
+                                );
+
+                                truncateBtn.fadeOut();
+                            }
+                        });
+            }
+        });
+    });
+
+    function pageUpdate()
+    {
+        $('#updt-icon').addClass('icon-spin');
+        $('#updt').html('обновление...');
+        $('button').addClass('disabled');
+        window.location.reload();
+    }
+
+    {% include 'admin/form.textarea.html.editor.twig.js' %}
+</script>
