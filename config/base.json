@@ -4,7 +4,7 @@
 		"standard",
 		"webdevtoolbar",
 		"profiles",
-        "installer"
+		"installer"
 	],
 	"always_mobile": false,
 	"pdo_developer_mode": {
